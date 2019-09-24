@@ -14,14 +14,32 @@ global_settings{ assumed_gamma 1.0 }
 #include "functions.inc"
 #include "math.inc"
 #include "transforms.inc"
+#include "Column_Kernel_01.inc" 
+
+#declare Stone_Texture = // Column kernel stone texture
+     texture { T_Grnt16
+               normal { agate 0.35 scale 0.05}
+               finish { phong 0.2 } 
+               scale 1 
+             }
+
+#declare Column_Kernel_Texture = // with vertical subdivisions 
+    texture { gradient<0,1,0> scale <1,0.67,1> turbulence 0.01 //------------------- 
+               texture_map{ [0.00 Stone_Texture ]
+                            [0.001 pigment{ color rgb <1,1,1>*0.1} ]
+                            [0.005 pigment{ color rgb <1,1,1>*0.1} ]
+                            [0.006 Stone_Texture ]
+                            [1.00 Stone_Texture ]
+                          } // end of texture_map      
+             }      
+       
 //--------------------------------------------------------------------------
 // camera ------------------------------------------------------------------
 
 #declare Camera_1 = camera {/*ultra_wide_angle*/ angle 75      // front view
-                            location  <1.4 , 0.5 ,-1>
-                            //location  <1.4 , 0.5 ,-2>
+                            location  <1.4 , 0.5 ,-2>
                             right     x*image_width/image_height
-                            look_at   <0.4, 0.7, 0>}
+                            look_at   <1.4, 0.7, 0>}
 #declare Camera_2 = camera {/*ultra_wide_angle*/ angle 95   // diagonal view
                             location  <2.0 , 2, -1.2>
                             right     x*image_width/image_height
@@ -39,10 +57,20 @@ global_settings{ assumed_gamma 1.0 }
                             location  <1.4 , 4.2 , 1.7>
                             right     x*image_width/image_height
                             look_at   <1.4 , 0.5 , 1.7>}
-camera{Camera_1
+camera{Camera_5
 }
+
 // sun ---------------------------------------------------------------------
-light_source{<-1500,2000,-2500> color White}
+light_source{
+  <-1500,2000,-2500>
+  color White
+  area_light
+  <5, 0, 0> <0, 5, 0>
+  4,4 // numbers in directions
+  adaptive 4  // 0,1,2,3...
+  jitter // random softening
+  rotate x*-5
+}
 
 // sky -------------------------------------------------------------- 
 plane{<0,1,0>,1 hollow  
@@ -98,7 +126,7 @@ fog { fog_type   2
     
     rotate<0,0,0> 
     translate<0,0,0>
-    } // end of union --------------------------
+    } // end of union ----c----------------------
      
     union{ //-----------------------------------
     
@@ -220,11 +248,7 @@ plane { <0,1,0>, 0
     box { <0,0,0>,< 2.30, 0.05, 2.85>   
       scale <1,1,1> rotate<0,0,0> translate<0.2,0.10,0.2>
     } // end of box --------------------------------------                   
-    texture { T_Grnt16
-                   //normal { agate 0.15 scale 0.15}
-                   finish { phong 0.5 } 
-                   scale 1 
-                 } // end of texture 
+    texture { Column_Kernel_Texture } // end of texture 
    }  
    // end of escadas --------------------------------------  
    
@@ -245,50 +269,23 @@ plane { <0,1,0>, 0
            scale <0,3,0> rotate<0,0,0> translate<1.4,0.5,0.35>
          } // end of cylinder  ------------------------------------
 
-        texture { pigment{ White_Marble } 
-                   // normal { bumps 0.5 scale 0.05}
-                   finish { phong 1 } 
-                   scale 0.9 
-                 } // end of texture 
+        texture { Column_Kernel_Texture } // end of texture 
    }
 
 
 // PILARES ============================================================     
     
     
-    #declare clipper = cylinder { <0,0,0>,<0,1,0>, 0.010                   
-       scale <1,1,1> rotate<0,0,0> translate<0.35,0.15,0.286>
-     }  
-    
-    #local i = 0;
-    #local n = 15;
-    #while (i < 10)
-		    
-	    object{clipper
-	        rotate<0,0,0>
-	        translate<0,0,0>
-	        rotate<0,i*360/n,0>
-	    }
-	    
-	    #local i = i + 1;
-	#end
+    #declare cilindro =object{ Column_Kernel_01 ( 1, // Column_Total_Height,  // 
+                               16,   // Column_Subdivision, // integer ~ 16
+                           0.07, // Column_Base_Radius, 
+                           0.06  // Column_Top_Radius,  
+                  ) //---------------------------------
 
+        texture { Column_Kernel_Texture}  
+        scale<1,1,1>  rotate< 0,0,0>  translate<0.35,0.15,0.35>  
+      } // end of "Column_01(...) --------------------------------------- 
     
-    #declare cilindro = 
-      
-    difference{
-      cylinder { <0,0,0>,<0,1,0>, 0.07                   
-       scale <1,1,1> rotate<0,0,0> translate<0.35,0.15,0.35>
-     } // end of cylinder -------------------------------------
-     
-      #declare I = 0;
-        #while(I <= 10)           
-            object{ clipper rotate< 0, 0, I*20 > translate< 0, 0, 0 >} 
-        #declare I = I + 1;
-      #end 
-     
-     
-    }
     
     #declare pilar =  
     union {
@@ -321,11 +318,7 @@ plane { <0,1,0>, 0
         
         cilindro 
            
-        texture { T_Grnt20
-                   //normal { agate 0.15 scale 0.15}
-                   finish { phong 0.5 } 
-                   scale 3 
-                 } // end of texture 
+        texture { Column_Kernel_Texture} // end of texture 
                   
         scale <1,1,1> rotate<0,0,0> translate<0,0,0>
     }
